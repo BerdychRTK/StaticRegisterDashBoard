@@ -259,7 +259,6 @@ class ExcelParser:
             rowB = str(row[B].value or "")
             if stage == Stage.attributes:
                 if rowIndex == "register":
-                    baseAddr = self.getBaseAddress(sheetName, node)
                     skipRow = 1
                     stage = Stage.register
                     bitWidth = getattr(node, "BitWidth", 32)
@@ -273,6 +272,13 @@ class ExcelParser:
                     continue
 
                 if rowA:
+                    if row[I].ctype not in (xlrd.XL_CELL_BLANK, xlrd.XL_CELL_EMPTY):
+                        # get base address by memory block (row[I])
+                        baseAddr = self.getBaseAddress(row[I].value, node)
+                    else:
+                        # otherwise, using node.name instead
+                        baseAddr = self.getBaseAddress(node.name, node)
+
                     register = Register(
                         name=rowB,
                         address=toHex(baseAddr + offset),
@@ -295,12 +301,15 @@ class ExcelParser:
                 raise IndexError(f"not expecting this stage: {stage}")
         return node
 
-    def getBaseAddress(self, sheetName: str, node: Node) -> int:
-
-        name = sheetName.replace("file_", "").replace(".xml", "")
+    def getBaseAddress(self, name: str, node: Node) -> int:
         baseAddr = 0
         if not self.hasIndex:
             baseAddr = getattr(node, "abstract", 0) or 0
+            if isinstance(baseAddr, str):
+                try:
+                    baseAddr = int(baseAddr, 16)
+                except ValueError:
+                    baseAddr = 0
         else:
             try:
                 block: MemoryBlock = next(
@@ -319,7 +328,7 @@ class ExcelParser:
         return int(baseAddr)
 
 
-def parse_arg():
+def parse_arg() -> str:
     if len(sys.argv) == 1:
         print("Error: Not enough argument")
         print(f"    usage: python {sys.argv[0]} filename")
@@ -329,12 +338,21 @@ def parse_arg():
 
 def main():
     filename = parse_arg()
-    parser = ExcelParser(filename)
-    root = parser.createTree()
+    if filename.endswith(".json"):
+        with open(filename, "r") as fd:
+            root = json.load(fd)
+        name = root["name"]
+        root = json.dumps(root)
+    else:
+        parser = ExcelParser(filename)
+        root = parser.createTree()
+        name = root.name
+        root = json.dumps(dataclasses.asdict(root))
+
     searchForReplacement(
-        json.dumps(dataclasses.asdict(root)),
+        root,
         "./template/index.html",
-        output=root.name,
+        output=name,
     )
     return 0
 
