@@ -19,7 +19,7 @@ python3.8 main.py ExcelFileOrJsonFile
 ### JSON
 
 #### `example.json`
-```JSON
+```javascript
 {
     "name": "root",
     "id": "unique_id1",
@@ -58,7 +58,7 @@ python3.8 main.py ExcelFileOrJsonFile
 ```
 ### Leaf Node
 A leaf node should be a `register` and must has following attributes
-```JSON
+```javascript
 // A register (leaf node)
 {
     "name" : "register",
@@ -79,7 +79,7 @@ A leaf node should be a `register` and must has following attributes
 ```
 
 ### Node (Parent Node)
-```JSON
+```javascript
 // A module (parent node)
 {
     "name" : "module1",
@@ -103,7 +103,7 @@ A leaf node should be a `register` and must has following attributes
 
 ### Root
 you can't use array as root index
-```JSON
+```javascript
 // Valid format
 {
     "name": "root",
@@ -114,7 +114,7 @@ you can't use array as root index
 }
 
 // this is invalid format
-[ // <-- not allowed using array as root index
+[  // <-- not allowed using array as root index
     {
         "name": "root0"
         ...
