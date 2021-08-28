@@ -19,6 +19,7 @@ python3.8 main.py ExcelFileOrJsonFile
 ### JSON
 
 #### `example.json`
+> Every node should has a unique ID
 ```javascript
 {
     "name": "root",
